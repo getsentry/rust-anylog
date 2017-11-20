@@ -79,6 +79,18 @@ impl<'a> LogEntry<'a> {
 }
 
 #[test]
+fn test_parse_c_log_entry() {
+    let le = LogEntry::parse(b"Tue Nov 21 00:30:05 2017 More stuff here");
+    let dt = le.local_timestamp().unwrap();
+    assert_eq!(dt.month(), 11);
+    assert_eq!(dt.day(), 21);
+    assert_eq!(dt.hour(), 0);
+    assert_eq!(dt.minute(), 30);
+    assert_eq!(dt.second(), 5);
+    assert_eq!(le.message(), "More stuff here");
+}
+
+#[test]
 fn test_parse_short_log_entry() {
     let le = LogEntry::parse(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.");
     let dt = le.local_timestamp().unwrap();

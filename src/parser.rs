@@ -5,6 +5,21 @@ use chrono::prelude::*;
 use types::LogEntry;
 
 lazy_static! {
+    static ref C_LOG_RE: Regex = Regex::new(r#"(?x)
+        ^
+            (?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20
+            (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
+            \x20
+            (\d+)
+            \x20
+            (\d{2}):(\d{2}):(\d{2})
+            \x20
+            (\d+)
+            [\t\x20]
+            (.*)
+        $
+    "#).unwrap();
+
     static ref SHORT_LOG_RE: Regex = Regex::new(r#"(?x)
         ^
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
@@ -92,6 +107,25 @@ fn get_month(bytes: &[u8]) -> Option<u32> {
         b"Dec" => 12,
         _ => return None
     })
+}
+
+pub fn parse_c_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+    let caps = match C_LOG_RE.captures(bytes) {
+        Some(caps) => caps,
+        None => return None
+    };
+
+    let month = get_month(&caps[1]).unwrap();
+    let day: u32 = str::from_utf8(&caps[2]).unwrap().parse().unwrap();
+    let h: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
+    let m: u32 = str::from_utf8(&caps[4]).unwrap().parse().unwrap();
+    let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
+    let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
+
+    Some(LogEntry::from_local_time(
+        Local.ymd(year, month, day).and_hms(h, m, s),
+        caps.get(7).map(|x| x.as_bytes()).unwrap()
+    ))
 }
 
 pub fn parse_short_log_entry(bytes: &[u8]) -> Option<LogEntry> {
@@ -201,6 +235,7 @@ pub fn parse_log_entry(bytes: &[u8]) -> Option<LogEntry> {
         }
     }
 
+    attempt!(parse_c_log_entry);
     attempt!(parse_short_log_entry);
     attempt!(parse_simple_log_entry);
     attempt!(parse_common_log_entry);
@@ -208,6 +243,18 @@ pub fn parse_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     attempt!(parse_common_alt2_log_entry);
 
     None
+}
+
+#[test]
+fn test_parse_c_log_entry() {
+    let le = parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here").unwrap();
+    let dt = le.local_timestamp().unwrap();
+    assert_eq!(dt.month(), 11);
+    assert_eq!(dt.day(), 21);
+    assert_eq!(dt.hour(), 0);
+    assert_eq!(dt.minute(), 30);
+    assert_eq!(dt.second(), 5);
+    assert_eq!(le.message(), "More stuff here");
 }
 
 #[test]
