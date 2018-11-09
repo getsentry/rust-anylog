@@ -1,5 +1,5 @@
-use std::borrow::Cow;
 use chrono::prelude::*;
+use std::borrow::Cow;
 
 use parser;
 
@@ -104,24 +104,34 @@ fn test_parse_short_log_entry() {
 
 #[test]
 fn test_parse_short_log_entry_extra() {
-    let le = LogEntry::parse(b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)");
+    let le = LogEntry::parse(
+        b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
+    );
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.month(), 11);
     assert_eq!(dt.day(), 20);
     assert_eq!(dt.hour(), 0);
     assert_eq!(dt.minute(), 31);
     assert_eq!(dt.second(), 19);
-    assert_eq!(le.message(), "<kernel> en0: Received EAPOL packet (length = 161)");
+    assert_eq!(
+        le.message(),
+        "<kernel> en0: Received EAPOL packet (length = 161)"
+    );
 }
 
 #[test]
 fn test_parse_simple_log_entry() {
-    let le = LogEntry::parse(b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi");
+    let le = LogEntry::parse(
+        b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
+    );
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.hour(), 22);
     assert_eq!(dt.minute(), 7);
     assert_eq!(dt.second(), 10);
-    assert_eq!(le.message(), "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi");
+    assert_eq!(
+        le.message(),
+        "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi"
+    );
 }
 
 #[test]
@@ -134,12 +144,17 @@ fn test_parse_common_log_entry() {
     assert_eq!(dt.hour(), 15);
     assert_eq!(dt.minute(), 39);
     assert_eq!(dt.second(), 16);
-    assert_eq!(le.message(), "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'");
+    assert_eq!(
+        le.message(),
+        "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'"
+    );
 }
 
 #[test]
 fn test_parse_common_alt_log_entry() {
-    let le = LogEntry::parse(b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed");
+    let le = LogEntry::parse(
+        b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+    );
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.year(), 2015);
     assert_eq!(dt.month(), 10);
@@ -147,12 +162,16 @@ fn test_parse_common_alt_log_entry() {
     assert_eq!(dt.hour(), 11);
     assert_eq!(dt.minute(), 40);
     assert_eq!(dt.second(), 10);
-    assert_eq!(le.message(), "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed");
+    assert_eq!(
+        le.message(),
+        "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed"
+    );
 }
 
 #[test]
 fn test_parse_common_alt2_log_entry() {
-    let le = LogEntry::parse(b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200");
+    let le =
+        LogEntry::parse(b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200");
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.year(), 2016);
     assert_eq!(dt.month(), 1);
@@ -160,5 +179,26 @@ fn test_parse_common_alt2_log_entry() {
     assert_eq!(dt.hour(), 22);
     assert_eq!(dt.minute(), 29);
     assert_eq!(dt.second(), 55);
-    assert_eq!(le.message(), "[0x70000073b000] DEBUG - Responding HTTP/1.1 200");
+    assert_eq!(
+        le.message(),
+        "[0x70000073b000] DEBUG - Responding HTTP/1.1 200"
+    );
+}
+
+#[test]
+fn test_parse_unreal_log_entry() {
+    let le = LogEntry::parse(
+        b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]",
+    );
+    let dt = le.local_timestamp().unwrap();
+    assert_eq!(dt.year(), 2018);
+    assert_eq!(dt.month(), 10);
+    assert_eq!(dt.day(), 29);
+    assert_eq!(dt.hour(), 16);
+    assert_eq!(dt.minute(), 56);
+    assert_eq!(dt.second(), 37);
+    assert_eq!(
+        le.message(),
+        "LogInit: Selected Device Profile: [WindowsNoEditor]"
+    );
 }
