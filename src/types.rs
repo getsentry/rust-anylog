@@ -219,3 +219,19 @@ fn test_parse_unreal_log_entry() {
         (Some("LogInit".into()), "Selected Device Profile: [WindowsNoEditor]".into())
     );
 }
+
+#[test]
+fn test_parse_unreal_log_entry_no_timestamp() {
+    let le = LogEntry::parse(
+        b"LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1",
+    );
+    assert!(le.local_timestamp().is_none());
+    assert_eq!(
+        le.message(),
+        "LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1"
+    );
+    assert_eq!(
+        le.component_and_message(),
+        (Some("LogDevObjectVersion".into()), "  Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1".into())
+    );
+}
