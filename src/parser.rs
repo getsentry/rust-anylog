@@ -7,14 +7,17 @@ use types::LogEntry;
 lazy_static! {
     static ref C_LOG_RE: Regex = Regex::new(r#"(?x)
         ^
+            \[?
             (?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20
             (\d+)
             \x20
             (\d{2}):(\d{2}):(\d{2})
+            (?:\.\d+)?
             \x20
             (\d+)
+            \]?
             [\t\x20]
             (.*)
         $
@@ -22,6 +25,7 @@ lazy_static! {
 
     static ref SHORT_LOG_RE: Regex = Regex::new(r#"(?x)
         ^
+            \[?
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20
@@ -29,6 +33,7 @@ lazy_static! {
             \x20
             (\d{2}):(\d{2}):(\d{2})
             (?:\.\d+)?
+            \]?
             [\t\x20]
             (.*)
         $
@@ -48,6 +53,7 @@ lazy_static! {
 
     static ref COMMON_LOG_RE: Regex = Regex::new(r#"(?x)
         ^
+            \[?
             (\d{4})-(\d{2})-(\d{2})
             \x20
             (\d{2}):(\d{2}):(\d{2})
@@ -55,6 +61,7 @@ lazy_static! {
             ([+-])
             (\d{2})(\d{2})
             :?
+            \]?
             [\t\x20]
             (.*)
         $
@@ -62,14 +69,17 @@ lazy_static! {
 
     static ref COMMON_ALT_LOG_RE: Regex = Regex::new(r#"(?x)
         ^
+            \[?
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20+
             (\d+)
             \x20
             (\d{2}):(\d{2}):(\d{2})
+            (?:\.\d+)?
             \x20
             (\d{4})
+            \]?
             [\t\x20]
             (.*)
         $
@@ -77,6 +87,7 @@ lazy_static! {
 
     static ref COMMON_ALT2_LOG_RE: Regex = Regex::new(r#"(?x)
         ^
+            \[?
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20+
@@ -85,6 +96,8 @@ lazy_static! {
             (\d{4})
             \x20
             (\d{2}):(\d{2}):(\d{2})
+            (?:\.\d+)?
+            \]?
             [\t\x20]
             (.*)
         $
@@ -328,4 +341,17 @@ fn test_parse_common_alt2_log_entry() {
     assert_eq!(dt.minute(), 29);
     assert_eq!(dt.second(), 55);
     assert_eq!(le.message(), "[0x70000073b000] DEBUG - Responding HTTP/1.1 200");
+}
+
+#[test]
+fn test_parse_webserver_log() {
+    let le = parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)").unwrap();
+    let dt = le.local_timestamp().unwrap();
+    assert_eq!(dt.year(), 2018);
+    assert_eq!(dt.month(), 2);
+    assert_eq!(dt.day(), 25);
+    assert_eq!(dt.hour(), 6);
+    assert_eq!(dt.minute(), 11);
+    assert_eq!(dt.second(), 12);
+    assert_eq!(le.message(), "[:notice] [pid 1:tid 2] process manager initialized (pid 1)");
 }
