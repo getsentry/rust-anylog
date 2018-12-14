@@ -270,8 +270,6 @@ pub fn parse_ue4_log_entry(bytes: &[u8]) -> Option<LogEntry> {
         None => return None,
     };
 
-    println!("{:#?}", str::from_utf8(&caps[1]));
-
     let year: i32 = str::from_utf8(&caps[1]).unwrap().parse().unwrap();
     let month: u32 = str::from_utf8(&caps[2]).unwrap().parse().unwrap();
     let day: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
@@ -333,7 +331,8 @@ fn test_parse_short_log_entry() {
 fn test_parse_short_log_entry_extra() {
     let le = parse_short_log_entry(
         b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
-    ).unwrap();
+    )
+    .unwrap();
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.month(), 11);
     assert_eq!(dt.day(), 20);
@@ -350,7 +349,8 @@ fn test_parse_short_log_entry_extra() {
 fn test_parse_simple_log_entry() {
     let le = parse_simple_log_entry(
         b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
-    ).unwrap();
+    )
+    .unwrap();
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.hour(), 22);
     assert_eq!(dt.minute(), 7);
@@ -381,7 +381,8 @@ fn test_parse_common_log_entry() {
 fn test_parse_common_alt_log_entry() {
     let le = parse_common_alt_log_entry(
         b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
-    ).unwrap();
+    )
+    .unwrap();
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.year(), 2015);
     assert_eq!(dt.month(), 10);
@@ -399,7 +400,8 @@ fn test_parse_common_alt_log_entry() {
 fn test_parse_common_alt2_log_entry() {
     let le = parse_common_alt2_log_entry(
         b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
-    ).unwrap();
+    )
+    .unwrap();
     let dt = le.local_timestamp().unwrap();
     assert_eq!(dt.year(), 2016);
     assert_eq!(dt.month(), 1);
@@ -423,5 +425,8 @@ fn test_parse_webserver_log() {
     assert_eq!(dt.hour(), 6);
     assert_eq!(dt.minute(), 11);
     assert_eq!(dt.second(), 12);
-    assert_eq!(le.message(), "[:notice] [pid 1:tid 2] process manager initialized (pid 1)");
+    assert_eq!(
+        le.message(),
+        "[:notice] [pid 1:tid 2] process manager initialized (pid 1)"
+    );
 }

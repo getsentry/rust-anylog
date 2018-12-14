@@ -2,6 +2,11 @@ use chrono::prelude::*;
 use std::borrow::Cow;
 
 use parser;
+use regex::Regex;
+
+lazy_static! {
+    static ref COMPONENT_RE: Regex = Regex::new(r#"^([^:]+): ?(.*)$"#).unwrap();
+}
 
 pub enum Timestamp {
     Utc(DateTime<Utc>),
@@ -75,6 +80,14 @@ impl<'a> LogEntry<'a> {
 
     pub fn message(&'a self) -> Cow<'a, str> {
         String::from_utf8_lossy(self.message)
+    }
+
+    pub fn component_and_message(&'a self) -> (Option<String>, String) {
+        if let Some(caps) = COMPONENT_RE.captures(&self.message()) {
+            (Some(caps[1].to_string()), caps[2].to_string())
+        } else {
+            (None, self.message().to_string())
+        }
     }
 }
 
@@ -200,5 +213,9 @@ fn test_parse_unreal_log_entry() {
     assert_eq!(
         le.message(),
         "LogInit: Selected Device Profile: [WindowsNoEditor]"
+    );
+    assert_eq!(
+        le.component_and_message(),
+        (Some("LogInit".into()), "Selected Device Profile: [WindowsNoEditor]".into())
     );
 }
