@@ -203,7 +203,7 @@ fn test_parse_unreal_log_entry() {
     let le = LogEntry::parse(
         b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]",
     );
-    let dt = le.local_timestamp().unwrap();
+    let dt = le.utc_timestamp().unwrap();
     assert_eq!(dt.year(), 2018);
     assert_eq!(dt.month(), 10);
     assert_eq!(dt.day(), 29);
