@@ -277,8 +277,8 @@ pub fn parse_ue4_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     let m: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(LogEntry::from_local_time(
-        Local.ymd(year, month, day).and_hms(h, m, s),
+    Some(LogEntry::from_utc_time(
+        Utc.ymd(year, month, day).and_hms(h, m, s),
         caps.get(7).map(|x| x.as_bytes()).unwrap(),
     ))
 }
