@@ -8,8 +8,10 @@ homepage = "https://github.com/mitsuhiko/rust-anylog"
 documentation = "https://docs.rs/anylog"
 license = "BSD-3-Clause"
 readme = "README.md"
+edition = "2018"
 
 [dependencies]
 chrono = "0.4.6"
 lazy_static = "1.2.0"
 regex = "1.1.0"
+insta = "0.4.1"

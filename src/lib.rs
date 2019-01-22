@@ -6,4 +6,4 @@ extern crate lazy_static;
 mod parser;
 mod types;
 
-pub use types::LogEntry;
+pub use crate::types::LogEntry;

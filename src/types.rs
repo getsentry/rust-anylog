@@ -1,13 +1,16 @@
-use chrono::prelude::*;
 use std::borrow::Cow;
+use std::fmt;
 
-use parser;
+use chrono::prelude::*;
 use regex::Regex;
+
+use crate::parser;
 
 lazy_static! {
     static ref COMPONENT_RE: Regex = Regex::new(r#"^([^:]+): ?(.*)$"#).unwrap();
 }
 
+#[derive(Debug)]
 pub enum Timestamp {
     Utc(DateTime<Utc>),
     Local(DateTime<Local>),
@@ -35,6 +38,15 @@ impl Timestamp {
 pub struct LogEntry<'a> {
     timestamp: Option<Timestamp>,
     message: &'a [u8],
+}
+
+impl<'a> fmt::Debug for LogEntry<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.debug_struct("LogEntry")
+            .field("utc_timestamp", &self.utc_timestamp())
+            .field("message", &self.message())
+            .finish()
+    }
 }
 
 impl<'a> LogEntry<'a> {
@@ -216,7 +228,10 @@ fn test_parse_unreal_log_entry() {
     );
     assert_eq!(
         le.component_and_message(),
-        (Some("LogInit".into()), "Selected Device Profile: [WindowsNoEditor]".into())
+        (
+            Some("LogInit".into()),
+            "Selected Device Profile: [WindowsNoEditor]".into()
+        )
     );
 }
 
@@ -232,6 +247,9 @@ fn test_parse_unreal_log_entry_no_timestamp() {
     );
     assert_eq!(
         le.component_and_message(),
-        (Some("LogDevObjectVersion".into()), "  Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1".into())
+        (
+            Some("LogDevObjectVersion".into()),
+            "  Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1".into()
+        )
     );
 }
