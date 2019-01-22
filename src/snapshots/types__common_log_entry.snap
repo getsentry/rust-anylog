@@ -1,0 +1,12 @@
+---
+created: "2019-01-22T02:16:38.101037+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"2015-05-13 17:39:16 +0200: Repaired \\'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\\'\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: Some(
+        2015-05-13T15:39:16Z
+    ),
+    message: "Repaired \'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\'"
+}

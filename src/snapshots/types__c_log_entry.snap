@@ -1,0 +1,12 @@
+---
+created: "2019-01-22T02:16:38.100962+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"Tue Nov 21 00:30:05 2017 More stuff here\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: Some(
+        2017-11-20T23:30:05Z
+    ),
+    message: "More stuff here"
+}

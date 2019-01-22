@@ -1,0 +1,12 @@
+---
+created: "2019-01-22T02:16:38.102164+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: Some(
+        2019-01-22T21:07:10Z
+    ),
+    message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi"
+}

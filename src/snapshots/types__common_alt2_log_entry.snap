@@ -1,0 +1,12 @@
+---
+created: "2019-01-22T02:16:38.101062+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: Some(
+        2016-01-03T21:29:55Z
+    ),
+    message: "[0x70000073b000] DEBUG - Responding HTTP/1.1 200"
+}

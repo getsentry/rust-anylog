@@ -1,0 +1,10 @@
+---
+created: "2019-01-22T02:16:38.107020+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: None,
+    message: "LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1"
+}

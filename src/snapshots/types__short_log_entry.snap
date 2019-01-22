@@ -1,0 +1,12 @@
+---
+created: "2019-01-22T02:16:38.102190+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: Some(
+        2019-11-20T20:56:01Z
+    ),
+    message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."
+}

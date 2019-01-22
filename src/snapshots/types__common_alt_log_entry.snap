@@ -1,0 +1,12 @@
+---
+created: "2019-01-22T02:16:38.101051+00:00"
+creator: insta@0.4.1
+expression: "LogEntry::parse(b\"Mon Oct  5 11:40:10 2015\\t[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed\")"
+source: src/types.rs
+---
+LogEntry {
+    utc_timestamp: Some(
+        2015-10-05T09:40:10Z
+    ),
+    message: "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed"
+}
