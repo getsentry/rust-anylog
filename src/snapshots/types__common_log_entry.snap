@@ -1,12 +1,14 @@
 ---
-created: "2019-01-22T02:16:38.101037+00:00"
-creator: insta@0.4.1
-expression: "LogEntry::parse(b\"2015-05-13 17:39:16 +0200: Repaired \\'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\\'\")"
+created: "2019-02-02T19:19:52.790273Z"
+creator: insta@0.6.0
 source: src/types.rs
+expression: "LogEntry::parse(b\"2015-05-13 17:39:16 +0200: Repaired \\'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\\'\")"
 ---
 LogEntry {
-    utc_timestamp: Some(
-        2015-05-13T15:39:16Z
+    timestamp: Some(
+        Fixed(
+            2015-05-13T17:39:16+02:00
+        )
     ),
     message: "Repaired \'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\'"
 }
