@@ -38,7 +38,7 @@ impl Timestamp {
 /// Represents a parsed log entry.
 pub struct LogEntry<'a> {
     timestamp: Option<Timestamp>,
-    message: &'a [u8],
+    message: Cow<'a, str>,
 }
 
 impl<'a> fmt::Debug for LogEntry<'a> {
@@ -65,7 +65,7 @@ impl<'a> LogEntry<'a> {
     pub fn from_utc_time(ts: DateTime<Utc>, message: &'a [u8]) -> LogEntry<'a> {
         LogEntry {
             timestamp: Some(Timestamp::Utc(ts)),
-            message: message,
+            message: String::from_utf8_lossy(message),
         }
     }
 
@@ -73,7 +73,7 @@ impl<'a> LogEntry<'a> {
     pub fn from_local_time(ts: DateTime<Local>, message: &'a [u8]) -> LogEntry<'a> {
         LogEntry {
             timestamp: Some(Timestamp::Local(ts)),
-            message: message,
+            message: String::from_utf8_lossy(message),
         }
     }
 
@@ -81,7 +81,7 @@ impl<'a> LogEntry<'a> {
     pub fn from_fixed_time(ts: DateTime<FixedOffset>, message: &'a [u8]) -> LogEntry<'a> {
         LogEntry {
             timestamp: Some(Timestamp::Fixed(ts)),
-            message: message,
+            message: String::from_utf8_lossy(message),
         }
     }
 
@@ -89,7 +89,7 @@ impl<'a> LogEntry<'a> {
     pub fn from_message_only(message: &'a [u8]) -> LogEntry<'a> {
         LogEntry {
             timestamp: None,
-            message: message,
+            message: String::from_utf8_lossy(message),
         }
     }
 
@@ -104,16 +104,19 @@ impl<'a> LogEntry<'a> {
     }
 
     /// Returns the message.
-    pub fn message(&'a self) -> Cow<'a, str> {
-        String::from_utf8_lossy(self.message)
+    pub fn message(&'a self) -> &str {
+        &self.message
     }
 
     /// Like `message` but chops off a leading component.
-    pub fn component_and_message(&'a self) -> (Option<String>, String) {
+    pub fn component_and_message(&'a self) -> (Option<&str>, &str) {
         if let Some(caps) = COMPONENT_RE.captures(&self.message()) {
-            (Some(caps[1].to_string()), caps[2].to_string())
+            (
+                Some(caps.get(1).unwrap().as_str()),
+                caps.get(2).unwrap().as_str(),
+            )
         } else {
-            (None, self.message().to_string())
+            (None, self.message())
         }
     }
 }
