@@ -127,6 +127,17 @@ lazy_static! {
     ).unwrap();
 }
 
+macro_rules! log_entry_from_local_time {
+    ($offset:expr, $y:expr, $m:expr, $d:expr, $hh:expr, $mm:expr, $ss:expr, $msg:expr) => {
+        match $offset {
+            Some(offset) => {
+                LogEntry::from_fixed_time(offset.ymd($y, $m, $d).and_hms($hh, $mm, $ss), $msg)
+            }
+            None => LogEntry::from_local_time(Local.ymd($y, $m, $d).and_hms($hh, $mm, $ss), $msg),
+        }
+    };
+}
+
 fn get_month(bytes: &[u8]) -> Option<u32> {
     Some(match bytes {
         b"Jan" => 1,
@@ -145,7 +156,20 @@ fn get_month(bytes: &[u8]) -> Option<u32> {
     })
 }
 
-pub fn parse_c_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+fn get_today(offset: Option<FixedOffset>) -> (i32, u32, u32) {
+    match offset {
+        None => {
+            let today = Local::today();
+            (today.year(), today.month(), today.day())
+        }
+        Some(offset) => {
+            let today = Utc::today().with_timezone(&offset);
+            (today.year(), today.month(), today.day())
+        }
+    }
+}
+
+pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match C_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -158,13 +182,19 @@ pub fn parse_c_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(LogEntry::from_local_time(
-        Local.ymd(year, month, day).and_hms(h, m, s),
-        caps.get(7).map(|x| x.as_bytes()).unwrap(),
+    Some(log_entry_from_local_time!(
+        offset,
+        year,
+        month,
+        day,
+        h,
+        m,
+        s,
+        caps.get(7).map(|x| x.as_bytes()).unwrap()
     ))
 }
 
-pub fn parse_short_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match SHORT_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -177,13 +207,19 @@ pub fn parse_short_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     let m: u32 = str::from_utf8(&caps[4]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
 
-    Some(LogEntry::from_local_time(
-        Local.ymd(year, month, day).and_hms(h, m, s),
-        caps.get(6).map(|x| x.as_bytes()).unwrap(),
+    Some(log_entry_from_local_time!(
+        offset,
+        year,
+        month,
+        day,
+        h,
+        m,
+        s,
+        caps.get(6).map(|x| x.as_bytes()).unwrap()
     ))
 }
 
-pub fn parse_simple_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match SIMPLE_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -193,13 +229,20 @@ pub fn parse_simple_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     let m: u32 = str::from_utf8(&caps[2]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
 
-    Some(LogEntry::from_local_time(
-        Local::today().and_hms(h, m, s),
-        caps.get(4).map(|x| x.as_bytes()).unwrap(),
+    let (year, month, day) = get_today(offset);
+    Some(log_entry_from_local_time!(
+        offset,
+        year,
+        month,
+        day,
+        h,
+        m,
+        s,
+        caps.get(4).map(|x| x.as_bytes()).unwrap()
     ))
 }
 
-pub fn parse_common_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_common_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match COMMON_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -226,7 +269,7 @@ pub fn parse_common_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     ))
 }
 
-pub fn parse_common_alt_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match COMMON_ALT_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -239,13 +282,19 @@ pub fn parse_common_alt_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(LogEntry::from_local_time(
-        Local.ymd(year, month, day).and_hms(h, m, s),
-        caps.get(7).map(|x| x.as_bytes()).unwrap(),
+    Some(log_entry_from_local_time!(
+        offset,
+        year,
+        month,
+        day,
+        h,
+        m,
+        s,
+        caps.get(7).map(|x| x.as_bytes()).unwrap()
     ))
 }
 
-pub fn parse_common_alt2_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match COMMON_ALT2_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -258,13 +307,19 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     let m: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(LogEntry::from_local_time(
-        Local.ymd(year, month, day).and_hms(h, m, s),
-        caps.get(7).map(|x| x.as_bytes()).unwrap(),
+    Some(log_entry_from_local_time!(
+        offset,
+        year,
+        month,
+        day,
+        h,
+        m,
+        s,
+        caps.get(7).map(|x| x.as_bytes()).unwrap()
     ))
 }
 
-pub fn parse_ue4_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_ue4_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option<LogEntry> {
     let caps = match UE4_LOG_RE.captures(bytes) {
         Some(caps) => caps,
         None => return None,
@@ -283,10 +338,10 @@ pub fn parse_ue4_log_entry(bytes: &[u8]) -> Option<LogEntry> {
     ))
 }
 
-pub fn parse_log_entry(bytes: &[u8]) -> Option<LogEntry> {
+pub fn parse_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
     macro_rules! attempt {
         ($func:ident) => {
-            if let Some(rv) = $func(bytes) {
+            if let Some(rv) = $func(bytes, offset) {
                 return Some(rv);
             }
         };
@@ -309,7 +364,7 @@ use insta::assert_debug_snapshot_matches;
 #[test]
 fn test_parse_c_log_entry() {
     assert_debug_snapshot_matches!(
-        parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here"),
+    parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here", None),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -326,7 +381,7 @@ fn test_parse_c_log_entry() {
 #[test]
 fn test_parse_short_log_entry() {
     assert_debug_snapshot_matches!(
-        parse_short_log_entry(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."),
+    parse_short_log_entry(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.", None),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -343,9 +398,10 @@ fn test_parse_short_log_entry() {
 #[test]
 fn test_parse_short_log_entry_extra() {
     assert_debug_snapshot_matches!(
-        parse_short_log_entry(
-            b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)"
-        ),
+    parse_short_log_entry(
+        b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
+        None
+    ),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -362,7 +418,7 @@ fn test_parse_short_log_entry_extra() {
 #[test]
 fn test_parse_simple_log_entry() {
     assert_debug_snapshot_matches!(
-        parse_simple_log_entry(b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi"),
+    parse_simple_log_entry(b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi", None),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -379,7 +435,7 @@ fn test_parse_simple_log_entry() {
 #[test]
 fn test_parse_common_log_entry() {
     assert_debug_snapshot_matches!(
-        parse_common_log_entry(b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'"),
+    parse_common_log_entry(b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'", None),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -396,9 +452,10 @@ fn test_parse_common_log_entry() {
 #[test]
 fn test_parse_common_alt_log_entry() {
     assert_debug_snapshot_matches!(
-        parse_common_alt_log_entry(
-            b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
-        ),
+    parse_common_alt_log_entry(
+        b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+        None
+    ),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -415,9 +472,10 @@ fn test_parse_common_alt_log_entry() {
 #[test]
 fn test_parse_common_alt2_log_entry() {
     assert_debug_snapshot_matches!(
-        parse_common_alt2_log_entry(
-            b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
-        ),
+    parse_common_alt2_log_entry(
+        b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
+        None
+    ),
         @r###"Some(
     LogEntry {
         timestamp: Some(
@@ -434,7 +492,7 @@ fn test_parse_common_alt2_log_entry() {
 #[test]
 fn test_parse_webserver_log() {
     assert_debug_snapshot_matches!(
-        parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)"),
+    parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)", None),
         @r###"Some(
     LogEntry {
         timestamp: Some(

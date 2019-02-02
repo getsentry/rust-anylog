@@ -53,7 +53,12 @@ impl<'a> fmt::Debug for LogEntry<'a> {
 impl<'a> LogEntry<'a> {
     /// Parses a well known log line into a log entry.
     pub fn parse(bytes: &[u8]) -> LogEntry {
-        parser::parse_log_entry(bytes).unwrap_or_else(|| LogEntry::from_message_only(bytes))
+        parser::parse_log_entry(bytes, None).unwrap_or_else(|| LogEntry::from_message_only(bytes))
+    }
+
+    /// Similar to `parse` but uses the given timezone for local time.
+    pub fn parse_with_local_timezone(bytes: &[u8], offset: Option<FixedOffset>) -> LogEntry {
+        parser::parse_log_entry(bytes, offset).unwrap_or_else(|| LogEntry::from_message_only(bytes))
     }
 
     /// Constructs a log entry from a UTC timestamp and message.
@@ -119,7 +124,7 @@ use insta::assert_debug_snapshot_matches;
 #[test]
 fn test_parse_c_log_entry() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(b"Tue Nov 21 00:30:05 2017 More stuff here"),
+    LogEntry::parse(b"Tue Nov 21 00:30:05 2017 More stuff here"),
         @r###"LogEntry {
     timestamp: Some(
         Local(
@@ -134,7 +139,7 @@ fn test_parse_c_log_entry() {
 #[test]
 fn test_parse_short_log_entry() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."),
+    LogEntry::parse(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."),
         @r###"LogEntry {
     timestamp: Some(
         Local(
@@ -149,9 +154,9 @@ fn test_parse_short_log_entry() {
 #[test]
 fn test_parse_short_log_entry_extra() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(
-            b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
-        ),
+    LogEntry::parse(
+        b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
+    ),
         @r###"LogEntry {
     timestamp: Some(
         Local(
@@ -166,9 +171,9 @@ fn test_parse_short_log_entry_extra() {
 #[test]
 fn test_parse_simple_log_entry() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(
-            b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
-        ),
+    LogEntry::parse(
+        b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
+    ),
         @r###"LogEntry {
     timestamp: Some(
         Local(
@@ -191,9 +196,9 @@ fn test_parse_common_log_entry() {
 #[test]
 fn test_parse_common_alt_log_entry() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(
-            b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
-        ),
+    LogEntry::parse(
+        b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+    ),
         @r###"LogEntry {
     timestamp: Some(
         Local(
@@ -208,7 +213,7 @@ fn test_parse_common_alt_log_entry() {
 #[test]
 fn test_parse_common_alt2_log_entry() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200"),
+    LogEntry::parse(b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200"),
         @r###"LogEntry {
     timestamp: Some(
         Local(
@@ -223,9 +228,9 @@ fn test_parse_common_alt2_log_entry() {
 #[test]
 fn test_parse_unreal_log_entry() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(
-            b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]",
-        ),
+    LogEntry::parse(
+        b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]",
+    ),
         @r###"LogEntry {
     timestamp: Some(
         Utc(
@@ -240,9 +245,9 @@ fn test_parse_unreal_log_entry() {
 #[test]
 fn test_parse_unreal_log_entry_no_timestamp() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(
-            b"LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1",
-        ),
+    LogEntry::parse(
+        b"LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1",
+    ),
         @r###"LogEntry {
     timestamp: None,
     message: "LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1"
@@ -253,7 +258,7 @@ fn test_parse_unreal_log_entry_no_timestamp() {
 #[test]
 fn test_simple_component_extraction() {
     assert_debug_snapshot_matches!(
-        LogEntry::parse(b"foo: bar").component_and_message(),
+    LogEntry::parse(b"foo: bar").component_and_message(),
         @r###"(
     Some(
         "foo"
