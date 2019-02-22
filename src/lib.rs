@@ -4,10 +4,6 @@
 //!
 //! This crate is used by [Sentry](https://sentry.io/) to parse logfiles into
 //! breadcrumbs.
-extern crate chrono;
-extern crate regex;
-#[macro_use]
-extern crate lazy_static;
 
 mod parser;
 mod types;

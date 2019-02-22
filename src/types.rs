@@ -3,6 +3,7 @@ use std::fmt;
 
 use chrono::prelude::*;
 use regex::Regex;
+use lazy_static::lazy_static;
 
 use crate::parser;
 
@@ -146,7 +147,7 @@ fn test_parse_short_log_entry() {
         @r###"LogEntry {
     timestamp: Some(
         Local(
-            2019-11-20T21:56:01+01:00
+            2017-11-20T21:56:01+01:00
         )
     ),
     message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."
@@ -163,7 +164,7 @@ fn test_parse_short_log_entry_extra() {
         @r###"LogEntry {
     timestamp: Some(
         Local(
-            2019-11-20T00:31:19+01:00
+            2017-11-20T00:31:19+01:00
         )
     ),
     message: "<kernel> en0: Received EAPOL packet (length = 161)"
@@ -180,7 +181,7 @@ fn test_parse_simple_log_entry() {
         @r###"LogEntry {
     timestamp: Some(
         Local(
-            2019-02-02T22:07:10+01:00
+            2019-02-22T22:07:10+01:00
         )
     ),
     message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi"

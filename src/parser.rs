@@ -1,8 +1,19 @@
-use chrono::prelude::*;
-use regex::bytes::Regex;
 use std::str;
 
+use chrono::prelude::*;
+use regex::bytes::Regex;
+use lazy_static::lazy_static;
+
 use crate::types::LogEntry;
+
+fn now() -> DateTime<Local> {
+    #[cfg(test)] {
+        Local.ymd(2017, 1, 1).and_hms(0, 0, 0)
+    }
+    #[cfg(not(test))] {
+        Local::now()
+    }
+}
 
 lazy_static! {
     static ref C_LOG_RE: Regex = Regex::new(
@@ -200,7 +211,7 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
         None => return None,
     };
 
-    let year = Local::now().year();
+    let year = now().year();
     let month = get_month(&caps[1]).unwrap();
     let day: u32 = str::from_utf8(&caps[2]).unwrap().parse().unwrap();
     let h: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
@@ -386,7 +397,7 @@ fn test_parse_short_log_entry() {
     LogEntry {
         timestamp: Some(
             Local(
-                2019-11-20T21:56:01+01:00
+                2017-11-20T21:56:01+01:00
             )
         ),
         message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."
@@ -406,7 +417,7 @@ fn test_parse_short_log_entry_extra() {
     LogEntry {
         timestamp: Some(
             Local(
-                2019-11-20T00:31:19+01:00
+                2017-11-20T00:31:19+01:00
             )
         ),
         message: "<kernel> en0: Received EAPOL packet (length = 161)"
@@ -423,7 +434,7 @@ fn test_parse_simple_log_entry() {
     LogEntry {
         timestamp: Some(
             Local(
-                2019-02-02T22:07:10+01:00
+                2019-02-22T22:07:10+01:00
             )
         ),
         message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi"
