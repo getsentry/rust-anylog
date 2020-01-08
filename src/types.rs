@@ -2,8 +2,8 @@ use std::borrow::Cow;
 use std::fmt;
 
 use chrono::prelude::*;
-use regex::Regex;
 use lazy_static::lazy_static;
+use regex::Regex;
 
 use crate::parser;
 
@@ -123,11 +123,11 @@ impl<'a> LogEntry<'a> {
 }
 
 #[cfg(test)]
-use insta::assert_debug_snapshot_matches;
+use insta::assert_debug_snapshot;
 
 #[test]
 fn test_parse_c_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(b"Tue Nov 21 00:30:05 2017 More stuff here"),
         @r###"
     LogEntry {
@@ -144,7 +144,7 @@ fn test_parse_c_log_entry() {
 
 #[test]
 fn test_parse_short_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."),
         @r###"
     LogEntry {
@@ -161,7 +161,7 @@ fn test_parse_short_log_entry() {
 
 #[test]
 fn test_parse_short_log_entry_extra() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(
         b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
     ),
@@ -180,7 +180,7 @@ fn test_parse_short_log_entry_extra() {
 
 #[test]
 fn test_parse_simple_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(
         b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
     ),
@@ -199,7 +199,7 @@ fn test_parse_simple_log_entry() {
 
 #[test]
 fn test_parse_common_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
         "common_log_entry",
         LogEntry::parse(b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'")
     );
@@ -207,7 +207,7 @@ fn test_parse_common_log_entry() {
 
 #[test]
 fn test_parse_common_alt_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(
         b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
     ),
@@ -226,7 +226,7 @@ fn test_parse_common_alt_log_entry() {
 
 #[test]
 fn test_parse_common_alt2_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200"),
         @r###"
     LogEntry {
@@ -243,7 +243,7 @@ fn test_parse_common_alt2_log_entry() {
 
 #[test]
 fn test_parse_unreal_log_entry() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(
         b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]",
     ),
@@ -262,7 +262,7 @@ fn test_parse_unreal_log_entry() {
 
 #[test]
 fn test_parse_unreal_log_entry_no_timestamp() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(
         b"LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1",
     ),
@@ -277,7 +277,7 @@ fn test_parse_unreal_log_entry_no_timestamp() {
 
 #[test]
 fn test_simple_component_extraction() {
-    assert_debug_snapshot_matches!(
+    assert_debug_snapshot!(
     LogEntry::parse(b"foo: bar").component_and_message(),
         @r###"
     (
