@@ -129,14 +129,16 @@ use insta::assert_debug_snapshot_matches;
 fn test_parse_c_log_entry() {
     assert_debug_snapshot_matches!(
     LogEntry::parse(b"Tue Nov 21 00:30:05 2017 More stuff here"),
-        @r###"LogEntry {
-    timestamp: Some(
-        Local(
-            2017-11-21T00:30:05+01:00
-        )
-    ),
-    message: "More stuff here"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Local(
+                2017-11-21T00:30:05+01:00,
+            ),
+        ),
+        message: "More stuff here",
+    }
+    "###
     );
 }
 
@@ -144,14 +146,16 @@ fn test_parse_c_log_entry() {
 fn test_parse_short_log_entry() {
     assert_debug_snapshot_matches!(
     LogEntry::parse(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."),
-        @r###"LogEntry {
-    timestamp: Some(
-        Local(
-            2017-11-20T21:56:01+01:00
-        )
-    ),
-    message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds."
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Local(
+                2017-11-20T21:56:01+01:00,
+            ),
+        ),
+        message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.",
+    }
+    "###
     );
 }
 
@@ -161,14 +165,16 @@ fn test_parse_short_log_entry_extra() {
     LogEntry::parse(
         b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
     ),
-        @r###"LogEntry {
-    timestamp: Some(
-        Local(
-            2017-11-20T00:31:19+01:00
-        )
-    ),
-    message: "<kernel> en0: Received EAPOL packet (length = 161)"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Local(
+                2017-11-20T00:31:19+01:00,
+            ),
+        ),
+        message: "<kernel> en0: Received EAPOL packet (length = 161)",
+    }
+    "###
     );
 }
 
@@ -178,14 +184,16 @@ fn test_parse_simple_log_entry() {
     LogEntry::parse(
         b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
     ),
-        @r###"LogEntry {
-    timestamp: Some(
-        Local(
-            2019-02-22T22:07:10+01:00
-        )
-    ),
-    message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Local(
+                2020-01-08T22:07:10+01:00,
+            ),
+        ),
+        message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
+    }
+    "###
     );
 }
 
@@ -203,14 +211,16 @@ fn test_parse_common_alt_log_entry() {
     LogEntry::parse(
         b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
     ),
-        @r###"LogEntry {
-    timestamp: Some(
-        Local(
-            2015-10-05T11:40:10+02:00
-        )
-    ),
-    message: "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Local(
+                2015-10-05T11:40:10+02:00,
+            ),
+        ),
+        message: "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+    }
+    "###
     );
 }
 
@@ -218,14 +228,16 @@ fn test_parse_common_alt_log_entry() {
 fn test_parse_common_alt2_log_entry() {
     assert_debug_snapshot_matches!(
     LogEntry::parse(b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200"),
-        @r###"LogEntry {
-    timestamp: Some(
-        Local(
-            2016-01-03T22:29:55+01:00
-        )
-    ),
-    message: "[0x70000073b000] DEBUG - Responding HTTP/1.1 200"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Local(
+                2016-01-03T22:29:55+01:00,
+            ),
+        ),
+        message: "[0x70000073b000] DEBUG - Responding HTTP/1.1 200",
+    }
+    "###
     );
 }
 
@@ -235,14 +247,16 @@ fn test_parse_unreal_log_entry() {
     LogEntry::parse(
         b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]",
     ),
-        @r###"LogEntry {
-    timestamp: Some(
-        Utc(
-            2018-10-29T16:56:37Z
-        )
-    ),
-    message: "LogInit: Selected Device Profile: [WindowsNoEditor]"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: Some(
+            Utc(
+                2018-10-29T16:56:37Z,
+            ),
+        ),
+        message: "LogInit: Selected Device Profile: [WindowsNoEditor]",
+    }
+    "###
     );
 }
 
@@ -252,10 +266,12 @@ fn test_parse_unreal_log_entry_no_timestamp() {
     LogEntry::parse(
         b"LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1",
     ),
-        @r###"LogEntry {
-    timestamp: None,
-    message: "LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1"
-}"###
+        @r###"
+    LogEntry {
+        timestamp: None,
+        message: "LogDevObjectVersion:   Dev-Enterprise (9DFFBCD6-494F-0158-E221-12823C92A888): 1",
+    }
+    "###
     );
 }
 
@@ -263,11 +279,13 @@ fn test_parse_unreal_log_entry_no_timestamp() {
 fn test_simple_component_extraction() {
     assert_debug_snapshot_matches!(
     LogEntry::parse(b"foo: bar").component_and_message(),
-        @r###"(
-    Some(
-        "foo"
-    ),
-    "bar"
-)"###
+        @r###"
+    (
+        Some(
+            "foo",
+        ),
+        "bar",
+    )
+    "###
     );
 }

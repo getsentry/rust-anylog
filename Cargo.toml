@@ -14,4 +14,6 @@ edition = "2018"
 chrono = "0.4.6"
 lazy_static = "1.2.0"
 regex = "1.1.0"
-insta = "0.6.3"
+
+[dev-dependencies]
+insta = "0.12.0"
