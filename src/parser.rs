@@ -17,6 +17,38 @@ fn now() -> DateTime<Local> {
     }
 }
 
+fn today(offset: Option<FixedOffset>) -> (i32, u32, u32) {
+    match offset {
+        None => {
+            let today = {
+                #[cfg(test)]
+                {
+                    Local.ymd(2017, 1, 1)
+                }
+                #[cfg(not(test))]
+                {
+                    Local::today()
+                }
+            };
+            (today.year(), today.month(), today.day())
+        }
+        Some(offset) => {
+            let today = {
+                #[cfg(test)]
+                {
+                    Utc.ymd(2017, 1, 1)
+                }
+                #[cfg(not(test))]
+                {
+                    Utc::today()
+                }
+            }
+            .with_timezone(&offset);
+            (today.year(), today.month(), today.day())
+        }
+    }
+}
+
 lazy_static! {
     static ref C_LOG_RE: Regex = Regex::new(
         r#"(?x)
@@ -25,12 +57,12 @@ lazy_static! {
             (?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20
-            (\d+)
+            ([0-9]+)
             \x20
-            (\d{2}):(\d{2}):(\d{2})
-            (?:\.\d+)?
+            ([0-9]{2}):([0-9]{2}):([0-9]{2})
+            (?:\.[0-9]+)?
             \x20
-            (\d+)
+            ([0-9]+)
             \]?
             [\t\x20]
             (.*)
@@ -44,10 +76,10 @@ lazy_static! {
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20
-            (\d+)
+            ([0-9]+)
             \x20
-            (\d{2}):(\d{2}):(\d{2})
-            (?:\.\d+)?
+            ([0-9]{2}):([0-9]{2}):([0-9]{2})
+            (?:\.[0-9]+)?
             \]?
             [\t\x20]
             (.*)
@@ -58,9 +90,9 @@ lazy_static! {
         r#"(?x)
         ^
             \[?
-                (\d+):
-                (\d+):
-                (\d+)
+                ([0-9]+):
+                ([0-9]+):
+                ([0-9]+)
             \]?
             [\t\x20]
             (.*)
@@ -71,12 +103,12 @@ lazy_static! {
         r#"(?x)
         ^
             \[?
-            (\d{4})-(\d{2})-(\d{2})
+            ([0-9]{4})-([0-9]{2})-([0-9]{2})
             \x20
-            (\d{2}):(\d{2}):(\d{2})
+            ([0-9]{2}):([0-9]{2}):([0-9]{2})
             \x20
             ([+-])
-            (\d{2})(\d{2})
+            ([0-9]{2})([0-9]{2})
             :?
             \]?
             [\t\x20]
@@ -91,12 +123,12 @@ lazy_static! {
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20+
-            (\d+)
+            ([0-9]+)
             \x20
-            (\d{2}):(\d{2}):(\d{2})
-            (?:\.\d+)?
+            ([0-9]{2}):([0-9]{2}):([0-9]{2})
+            (?:\.[0-9]+)?
             \x20
-            (\d{4})
+            ([0-9]{4})
             \]?
             [\t\x20]
             (.*)
@@ -110,12 +142,12 @@ lazy_static! {
             (?:(?:Mon|Tue|Wed|Thu|Fri|Sat|Sun)\x20)?
             (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)
             \x20+
-            (\d+),?
+            ([0-9]+),?
             \x20
-            (\d{4})
+            ([0-9]{4})
             \x20
-            (\d{2}):(\d{2}):(\d{2})
-            (?:\.\d+)?
+            ([0-9]{2}):([0-9]{2}):([0-9]{2})
+            (?:\.[0-9]+)?
             \]?
             [\t\x20]
             (.*)
@@ -127,13 +159,13 @@ lazy_static! {
         r#"(?x)
         ^
             \[
-                (\d+)\.(\d+)\.(\d+)
+                ([0-9]+)\.([0-9]+)\.([0-9]+)
                 -
-                (\d+)\.(\d+)\.(\d+)
+                ([0-9]+)\.([0-9]+)\.([0-9]+)
                 :
-                (?:\d+)
+                (?:[0-9]+)
             \]
-            \[\x20+\d+\]
+            \[\x20+[0-9]+\]
             (.*)
         $
     "#
@@ -167,19 +199,6 @@ fn get_month(bytes: &[u8]) -> Option<u32> {
         b"Dec" => 12,
         _ => return None,
     })
-}
-
-fn get_today(offset: Option<FixedOffset>) -> (i32, u32, u32) {
-    match offset {
-        None => {
-            let today = Local::today();
-            (today.year(), today.month(), today.day())
-        }
-        Some(offset) => {
-            let today = Utc::today().with_timezone(&offset);
-            (today.year(), today.month(), today.day())
-        }
-    }
 }
 
 pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -242,7 +261,7 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
     let m: u32 = str::from_utf8(&caps[2]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
 
-    let (year, month, day) = get_today(offset);
+    let (year, month, day) = today(offset);
     Some(log_entry_from_local_time!(
         offset,
         year,
@@ -443,7 +462,7 @@ fn test_parse_simple_log_entry() {
         LogEntry {
             timestamp: Some(
                 Local(
-                    2020-01-08T22:07:10+01:00,
+                    2017-01-01T22:07:10+01:00,
                 ),
             ),
             message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",

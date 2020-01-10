@@ -188,7 +188,7 @@ fn test_parse_simple_log_entry() {
     LogEntry {
         timestamp: Some(
             Local(
-                2020-01-08T22:07:10+01:00,
+                2017-01-01T22:07:10+01:00,
             ),
         ),
         message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
