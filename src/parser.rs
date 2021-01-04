@@ -175,10 +175,14 @@ lazy_static! {
 macro_rules! log_entry_from_local_time {
     ($offset:expr, $y:expr, $m:expr, $d:expr, $hh:expr, $mm:expr, $ss:expr, $msg:expr) => {
         match $offset {
-            Some(offset) => {
-                LogEntry::from_fixed_time(offset.ymd($y, $m, $d).and_hms($hh, $mm, $ss), $msg)
-            }
-            None => LogEntry::from_local_time(Local.ymd($y, $m, $d).and_hms($hh, $mm, $ss), $msg),
+            Some(offset) => offset
+                .ymd($y, $m, $d)
+                .and_hms_opt($hh, $mm, $ss)
+                .map(|date| LogEntry::from_fixed_time(date, $msg)),
+            None => Local
+                .ymd($y, $m, $d)
+                .and_hms_opt($hh, $mm, $ss)
+                .map(|date| LogEntry::from_local_time(date, $msg)),
         }
     };
 }
@@ -214,7 +218,7 @@ pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<Lo
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time!(
         offset,
         year,
         month,
@@ -223,7 +227,7 @@ pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<Lo
         m,
         s,
         caps.get(7).map(|x| x.as_bytes()).unwrap()
-    ))
+    )
 }
 
 pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -239,7 +243,7 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
     let m: u32 = str::from_utf8(&caps[4]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time!(
         offset,
         year,
         month,
@@ -248,7 +252,7 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
         m,
         s,
         caps.get(6).map(|x| x.as_bytes()).unwrap()
-    ))
+    )
 }
 
 pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -262,7 +266,7 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
     let s: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
 
     let (year, month, day) = today(offset);
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time!(
         offset,
         year,
         month,
@@ -271,7 +275,7 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
         m,
         s,
         caps.get(4).map(|x| x.as_bytes()).unwrap()
-    ))
+    )
 }
 
 pub fn parse_common_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -314,7 +318,7 @@ pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> 
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time!(
         offset,
         year,
         month,
@@ -323,7 +327,7 @@ pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> 
         m,
         s,
         caps.get(7).map(|x| x.as_bytes()).unwrap()
-    ))
+    )
 }
 
 pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -339,7 +343,7 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) ->
     let m: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time!(
         offset,
         year,
         month,
@@ -348,7 +352,7 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) ->
         m,
         s,
         caps.get(7).map(|x| x.as_bytes()).unwrap()
-    ))
+    )
 }
 
 pub fn parse_ue4_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option<LogEntry> {
