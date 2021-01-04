@@ -172,15 +172,27 @@ lazy_static! {
     ).unwrap();
 }
 
-macro_rules! log_entry_from_local_time {
-    ($offset:expr, $y:expr, $m:expr, $d:expr, $hh:expr, $mm:expr, $ss:expr, $msg:expr) => {
-        match $offset {
-            Some(offset) => {
-                LogEntry::from_fixed_time(offset.ymd($y, $m, $d).and_hms($hh, $mm, $ss), $msg)
-            }
-            None => LogEntry::from_local_time(Local.ymd($y, $m, $d).and_hms($hh, $mm, $ss), $msg),
-        }
-    };
+#[allow(clippy::too_many_arguments)]
+fn log_entry_from_local_time(
+    offset: Option<FixedOffset>,
+    year: i32,
+    month: u32,
+    day: u32,
+    hh: u32,
+    mm: u32,
+    ss: u32,
+    message: &[u8],
+) -> Option<LogEntry> {
+    match offset {
+        Some(offset) => offset
+            .ymd(year, month, day)
+            .and_hms_opt(hh, mm, ss)
+            .map(|date| LogEntry::from_fixed_time(date, message)),
+        None => Local
+            .ymd(year, month, day)
+            .and_hms_opt(hh, mm, ss)
+            .map(|date| LogEntry::from_local_time(date, message)),
+    }
 }
 
 fn get_month(bytes: &[u8]) -> Option<u32> {
@@ -214,7 +226,7 @@ pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<Lo
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -222,8 +234,8 @@ pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<Lo
         h,
         m,
         s,
-        caps.get(7).map(|x| x.as_bytes()).unwrap()
-    ))
+        caps.get(7).map(|x| x.as_bytes()).unwrap(),
+    )
 }
 
 pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -239,7 +251,7 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
     let m: u32 = str::from_utf8(&caps[4]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -247,8 +259,8 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
         h,
         m,
         s,
-        caps.get(6).map(|x| x.as_bytes()).unwrap()
-    ))
+        caps.get(6).map(|x| x.as_bytes()).unwrap(),
+    )
 }
 
 pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -262,7 +274,7 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
     let s: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
 
     let (year, month, day) = today(offset);
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -270,8 +282,8 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
         h,
         m,
         s,
-        caps.get(4).map(|x| x.as_bytes()).unwrap()
-    ))
+        caps.get(4).map(|x| x.as_bytes()).unwrap(),
+    )
 }
 
 pub fn parse_common_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -314,7 +326,7 @@ pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> 
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -322,8 +334,8 @@ pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> 
         h,
         m,
         s,
-        caps.get(7).map(|x| x.as_bytes()).unwrap()
-    ))
+        caps.get(7).map(|x| x.as_bytes()).unwrap(),
+    )
 }
 
 pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -339,7 +351,7 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) ->
     let m: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    Some(log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -347,8 +359,8 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) ->
         h,
         m,
         s,
-        caps.get(7).map(|x| x.as_bytes()).unwrap()
-    ))
+        caps.get(7).map(|x| x.as_bytes()).unwrap(),
+    )
 }
 
 pub fn parse_ue4_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option<LogEntry> {
@@ -396,160 +408,178 @@ use insta::assert_debug_snapshot;
 #[test]
 fn test_parse_c_log_entry() {
     assert_debug_snapshot!(
-    parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here", None),
+        parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here", None),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2017-11-21T00:30:05+01:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2017-11-21T00:30:05+01:00,
+                    ),
                 ),
-            ),
-            message: "More stuff here",
-        },
-    )
-    "###
+                message: "More stuff here",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_short_log_entry() {
     assert_debug_snapshot!(
-    parse_short_log_entry(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.", None),
+        parse_short_log_entry(
+            b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.",
+            None
+        ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2017-11-20T21:56:01+01:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2017-11-20T21:56:01+01:00,
+                    ),
                 ),
-            ),
-            message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.",
-        },
-    )
-    "###
+                message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_short_log_entry_extra() {
     assert_debug_snapshot!(
-    parse_short_log_entry(
-        b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
-        None
-    ),
+        parse_short_log_entry(
+            b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
+            None
+        ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2017-11-20T00:31:19+01:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2017-11-20T00:31:19+01:00,
+                    ),
                 ),
-            ),
-            message: "<kernel> en0: Received EAPOL packet (length = 161)",
-        },
-    )
-    "###
+                message: "<kernel> en0: Received EAPOL packet (length = 161)",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_simple_log_entry() {
     assert_debug_snapshot!(
-    parse_simple_log_entry(b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi", None),
+        parse_simple_log_entry(
+            b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
+            None
+        ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2017-01-01T22:07:10+01:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2017-01-01T22:07:10+01:00,
+                    ),
                 ),
-            ),
-            message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
-        },
-    )
-    "###
+                message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_common_log_entry() {
     assert_debug_snapshot!(
-    parse_common_log_entry(b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'", None),
+        parse_common_log_entry(
+            b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
+            None
+        ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Fixed(
-                    2015-05-13T17:39:16+02:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Fixed(
+                        2015-05-13T17:39:16+02:00,
+                    ),
                 ),
-            ),
-            message: "Repaired \'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\'",
-        },
-    )
-    "###
+                message: "Repaired \'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\'",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_common_alt_log_entry() {
     assert_debug_snapshot!(
-    parse_common_alt_log_entry(
-        b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
-        None
-    ),
+        parse_common_alt_log_entry(
+            b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+            None
+        ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2015-10-05T11:40:10+02:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2015-10-05T11:40:10+02:00,
+                    ),
                 ),
-            ),
-            message: "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
-        },
-    )
-    "###
+                message: "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_common_alt2_log_entry() {
     assert_debug_snapshot!(
-    parse_common_alt2_log_entry(
-        b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
-        None
-    ),
+        parse_common_alt2_log_entry(
+            b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
+            None
+        ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2016-01-03T22:29:55+01:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2016-01-03T22:29:55+01:00,
+                    ),
                 ),
-            ),
-            message: "[0x70000073b000] DEBUG - Responding HTTP/1.1 200",
-        },
-    )
-    "###
+                message: "[0x70000073b000] DEBUG - Responding HTTP/1.1 200",
+            },
+        )
+        "###
     );
 }
 
 #[test]
 fn test_parse_webserver_log() {
     assert_debug_snapshot!(
-    parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)", None),
+        parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)", None),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Local(
-                    2018-02-25T06:11:12+01:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Local(
+                        2018-02-25T06:11:12+01:00,
+                    ),
                 ),
-            ),
-            message: "[:notice] [pid 1:tid 2] process manager initialized (pid 1)",
-        },
+                message: "[:notice] [pid 1:tid 2] process manager initialized (pid 1)",
+            },
+        )
+        "###
     )
-    "###
-    )
+}
+
+#[test]
+fn test_parse_invalid_time() {
+    // same as test_parse_c_log_entry, except for invalid timestamp
+    assert_debug_snapshot!(
+        parse_c_log_entry(b"Tue Nov 21 99:99:99 2017 More stuff here", None),
+        @"None"
+    );
 }
