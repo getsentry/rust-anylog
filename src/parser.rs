@@ -396,7 +396,7 @@ use insta::assert_debug_snapshot;
 #[test]
 fn test_parse_c_log_entry() {
     assert_debug_snapshot!(
-    parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here", None),
+        parse_c_log_entry(b"Tue Nov 21 00:30:05 2017 More stuff here", None),
         @r###"
     Some(
         LogEntry {
@@ -415,7 +415,10 @@ fn test_parse_c_log_entry() {
 #[test]
 fn test_parse_short_log_entry() {
     assert_debug_snapshot!(
-    parse_short_log_entry(b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.", None),
+        parse_short_log_entry(
+            b"Nov 20 21:56:01 herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.",
+            None
+        ),
         @r###"
     Some(
         LogEntry {
@@ -434,10 +437,10 @@ fn test_parse_short_log_entry() {
 #[test]
 fn test_parse_short_log_entry_extra() {
     assert_debug_snapshot!(
-    parse_short_log_entry(
-        b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
-        None
-    ),
+        parse_short_log_entry(
+            b"Mon Nov 20 00:31:19.005 <kernel> en0: Received EAPOL packet (length = 161)",
+            None
+        ),
         @r###"
     Some(
         LogEntry {
@@ -456,7 +459,10 @@ fn test_parse_short_log_entry_extra() {
 #[test]
 fn test_parse_simple_log_entry() {
     assert_debug_snapshot!(
-    parse_simple_log_entry(b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi", None),
+        parse_simple_log_entry(
+            b"22:07:10 server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
+            None
+        ),
         @r###"
     Some(
         LogEntry {
@@ -475,7 +481,10 @@ fn test_parse_simple_log_entry() {
 #[test]
 fn test_parse_common_log_entry() {
     assert_debug_snapshot!(
-    parse_common_log_entry(b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'", None),
+        parse_common_log_entry(
+            b"2015-05-13 17:39:16 +0200: Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
+            None
+        ),
         @r###"
     Some(
         LogEntry {
@@ -494,10 +503,10 @@ fn test_parse_common_log_entry() {
 #[test]
 fn test_parse_common_alt_log_entry() {
     assert_debug_snapshot!(
-    parse_common_alt_log_entry(
-        b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
-        None
-    ),
+        parse_common_alt_log_entry(
+            b"Mon Oct  5 11:40:10 2015	[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
+            None
+        ),
         @r###"
     Some(
         LogEntry {
@@ -516,10 +525,10 @@ fn test_parse_common_alt_log_entry() {
 #[test]
 fn test_parse_common_alt2_log_entry() {
     assert_debug_snapshot!(
-    parse_common_alt2_log_entry(
-        b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
-        None
-    ),
+        parse_common_alt2_log_entry(
+            b"Jan 03, 2016 22:29:55 [0x70000073b000] DEBUG - Responding HTTP/1.1 200",
+            None
+        ),
         @r###"
     Some(
         LogEntry {
@@ -538,7 +547,7 @@ fn test_parse_common_alt2_log_entry() {
 #[test]
 fn test_parse_webserver_log() {
     assert_debug_snapshot!(
-    parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)", None),
+        parse_common_alt_log_entry(b"[Sun Feb 25 06:11:12.043123448 2018] [:notice] [pid 1:tid 2] process manager initialized (pid 1)", None),
         @r###"
     Some(
         LogEntry {
@@ -552,4 +561,13 @@ fn test_parse_webserver_log() {
     )
     "###
     )
+}
+
+#[test]
+fn test_parse_invalid_time() {
+    // same as test_parse_c_log_entry, except for invalid timestamp
+    assert_debug_snapshot!(
+        parse_c_log_entry(b"Tue Nov 21 99:99:99 2017 More stuff here", None),
+        @"None"
+    );
 }
