@@ -172,19 +172,27 @@ lazy_static! {
     ).unwrap();
 }
 
-macro_rules! log_entry_from_local_time {
-    ($offset:expr, $y:expr, $m:expr, $d:expr, $hh:expr, $mm:expr, $ss:expr, $msg:expr) => {
-        match $offset {
-            Some(offset) => offset
-                .ymd($y, $m, $d)
-                .and_hms_opt($hh, $mm, $ss)
-                .map(|date| LogEntry::from_fixed_time(date, $msg)),
-            None => Local
-                .ymd($y, $m, $d)
-                .and_hms_opt($hh, $mm, $ss)
-                .map(|date| LogEntry::from_local_time(date, $msg)),
-        }
-    };
+#[allow(clippy::too_many_arguments)]
+fn log_entry_from_local_time(
+    offset: Option<FixedOffset>,
+    year: i32,
+    month: u32,
+    day: u32,
+    hh: u32,
+    mm: u32,
+    ss: u32,
+    message: &[u8],
+) -> Option<LogEntry> {
+    match offset {
+        Some(offset) => offset
+            .ymd(year, month, day)
+            .and_hms_opt(hh, mm, ss)
+            .map(|date| LogEntry::from_fixed_time(date, message)),
+        None => Local
+            .ymd(year, month, day)
+            .and_hms_opt(hh, mm, ss)
+            .map(|date| LogEntry::from_local_time(date, message)),
+    }
 }
 
 fn get_month(bytes: &[u8]) -> Option<u32> {
@@ -218,7 +226,7 @@ pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<Lo
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -226,7 +234,7 @@ pub fn parse_c_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Option<Lo
         h,
         m,
         s,
-        caps.get(7).map(|x| x.as_bytes()).unwrap()
+        caps.get(7).map(|x| x.as_bytes()).unwrap(),
     )
 }
 
@@ -243,7 +251,7 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
     let m: u32 = str::from_utf8(&caps[4]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
 
-    log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -251,7 +259,7 @@ pub fn parse_short_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Optio
         h,
         m,
         s,
-        caps.get(6).map(|x| x.as_bytes()).unwrap()
+        caps.get(6).map(|x| x.as_bytes()).unwrap(),
     )
 }
 
@@ -266,7 +274,7 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
     let s: u32 = str::from_utf8(&caps[3]).unwrap().parse().unwrap();
 
     let (year, month, day) = today(offset);
-    log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -274,7 +282,7 @@ pub fn parse_simple_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> Opti
         h,
         m,
         s,
-        caps.get(4).map(|x| x.as_bytes()).unwrap()
+        caps.get(4).map(|x| x.as_bytes()).unwrap(),
     )
 }
 
@@ -318,7 +326,7 @@ pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> 
     let s: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let year: i32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -326,7 +334,7 @@ pub fn parse_common_alt_log_entry(bytes: &[u8], offset: Option<FixedOffset>) -> 
         h,
         m,
         s,
-        caps.get(7).map(|x| x.as_bytes()).unwrap()
+        caps.get(7).map(|x| x.as_bytes()).unwrap(),
     )
 }
 
@@ -343,7 +351,7 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) ->
     let m: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    log_entry_from_local_time!(
+    log_entry_from_local_time(
         offset,
         year,
         month,
@@ -351,7 +359,7 @@ pub fn parse_common_alt2_log_entry(bytes: &[u8], offset: Option<FixedOffset>) ->
         h,
         m,
         s,
-        caps.get(7).map(|x| x.as_bytes()).unwrap()
+        caps.get(7).map(|x| x.as_bytes()).unwrap(),
     )
 }
 
