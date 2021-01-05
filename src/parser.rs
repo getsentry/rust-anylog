@@ -185,12 +185,14 @@ fn log_entry_from_local_time(
 ) -> Option<LogEntry> {
     match offset {
         Some(offset) => offset
-            .ymd(year, month, day)
-            .and_hms_opt(hh, mm, ss)
+            .ymd_opt(year, month, day)
+            .latest()
+            .and_then(|date| date.and_hms_opt(hh, mm, ss))
             .map(|date| LogEntry::from_fixed_time(date, message)),
         None => Local
-            .ymd(year, month, day)
-            .and_hms_opt(hh, mm, ss)
+            .ymd_opt(year, month, day)
+            .latest()
+            .and_then(|date| date.and_hms_opt(hh, mm, ss))
             .map(|date| LogEntry::from_local_time(date, message)),
     }
 }
