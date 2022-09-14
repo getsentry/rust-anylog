@@ -165,7 +165,7 @@ lazy_static! {
                 :
                 (?:[0-9]+)
             \]
-            \[\x20+[0-9]+\]
+            \[\x20*[0-9]+\]
             (.*)
         $
     "#
@@ -583,5 +583,39 @@ fn test_parse_invalid_time() {
     assert_debug_snapshot!(
         parse_c_log_entry(b"Tue Nov 21 99:99:99 2017 More stuff here", None),
         @"None"
+    );
+}
+
+#[test]
+fn test_parse_ue4_log() {
+    assert_debug_snapshot!(
+        parse_ue4_log_entry(b"[2018.10.29-16.56.37:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]", None),
+        @r###"
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Utc(
+                        2018-10-29T16:56:37Z,
+                    ),
+                ),
+                message: "LogInit: Selected Device Profile: [WindowsNoEditor]",
+            },
+        )
+        "###
+    );
+    assert_debug_snapshot!(
+        parse_ue4_log_entry(b"[2022.09.14-11.13.24:829][316]LogShaderCompilers: Display: ================================================", None),
+        @r###"
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Utc(
+                        2022-09-14T11:13:24Z,
+                    ),
+                ),
+                message: "LogShaderCompilers: Display: ================================================",
+            },
+        )
+        "###
     );
 }
