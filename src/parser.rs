@@ -500,17 +500,17 @@ fn test_parse_common_log_entry() {
             None
         ),
         @r###"
-        Some(
-            LogEntry {
-                timestamp: Some(
-                    Fixed(
-                        2015-05-13T17:39:16+02:00,
-                    ),
+    Some(
+        LogEntry {
+            timestamp: Some(
+                Fixed(
+                    2015-05-13T17:39:16+02:00,
                 ),
-                message: "Repaired \'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601\'",
-            },
-        )
-        "###
+            ),
+            message: "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
+        },
+    )
+    "###
     );
 }
 
