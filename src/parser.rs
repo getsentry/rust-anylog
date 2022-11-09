@@ -103,7 +103,7 @@ lazy_static! {
         r#"(?x)
         ^
             \[?
-            ([0-9]{4})-([0-9]{2})-([0-9]{2})
+            ([0-9]{4}?)-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])
             \x20
             ([0-9]{2}):([0-9]{2}):([0-9]{2})
             \x20
@@ -159,7 +159,7 @@ lazy_static! {
         r#"(?x)
         ^
             \[
-                ([0-9]+)\.([0-9]+)\.([0-9]+)
+                ([0-9]{4}?)\.(0[1-9]|1[0-2])\.(0[1-9]|[12][0-9]|3[01])
                 -
                 ([0-9]+)\.([0-9]+)\.([0-9]+)
                 :
@@ -310,7 +310,10 @@ pub fn parse_common_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Opt
     );
 
     Some(LogEntry::from_fixed_time(
-        offset.ymd(year, month, day).and_hms(h, m, s),
+        offset
+            .ymd_opt(year, month, day)
+            .and_hms_opt(h, m, s)
+            .single()?,
         caps.get(10).map(|x| x.as_bytes()).unwrap(),
     ))
 }
@@ -379,7 +382,9 @@ pub fn parse_ue4_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
     Some(LogEntry::from_utc_time(
-        Utc.ymd(year, month, day).and_hms(h, m, s),
+        Utc.ymd_opt(year, month, day)
+            .and_hms_opt(h, m, s)
+            .single()?,
         caps.get(7).map(|x| x.as_bytes()).unwrap(),
     ))
 }
@@ -616,6 +621,16 @@ fn test_parse_ue4_log() {
                 message: "LogShaderCompilers: Display: ================================================",
             },
         )
+        "###
+    );
+}
+
+#[test]
+fn test_parse_ue4_log_fail() {
+    assert_debug_snapshot!(
+        parse_ue4_log_entry(b"[2022.13.29-16.63.27:542][  0]LogInit: Selected Device Profile: [WindowsNoEditor]", None),
+        @r###"
+        None
         "###
     );
 }
