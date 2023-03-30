@@ -305,8 +305,7 @@ pub fn parse_common_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Opt
             * 60
             + str::from_utf8(&caps[9]).unwrap().parse::<i32>().unwrap())
             * 60,
-    )
-    .unwrap(); // TODO
+    )?;
 
     Some(LogEntry::from_fixed_time(
         offset
