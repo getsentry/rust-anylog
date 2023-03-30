@@ -45,3 +45,5 @@ jobs:
 
       - name: Run Cargo Tests
         run: cargo test --workspace --all-features
+        env:
+          TZ: GMT+2

@@ -417,7 +417,7 @@ fn test_parse_c_log_entry() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2017-11-21T00:30:05+01:00,
+                        2017-11-21T00:30:05-02:00,
                     ),
                 ),
                 message: "More stuff here",
@@ -439,7 +439,7 @@ fn test_parse_short_log_entry() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2017-11-20T21:56:01+01:00,
+                        2017-11-20T21:56:01-02:00,
                     ),
                 ),
                 message: "herzog com.apple.xpc.launchd[1] (com.apple.preference.displays.MirrorDisplays): Service only ran for 0 seconds. Pushing respawn out by 10 seconds.",
@@ -461,7 +461,7 @@ fn test_parse_short_log_entry_extra() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2017-11-20T00:31:19+01:00,
+                        2017-11-20T00:31:19-02:00,
                     ),
                 ),
                 message: "<kernel> en0: Received EAPOL packet (length = 161)",
@@ -483,7 +483,7 @@ fn test_parse_simple_log_entry() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2017-01-01T22:07:10+01:00,
+                        2017-01-01T22:07:10-02:00,
                     ),
                 ),
                 message: "server  | detected binary path: /Users/mitsuhiko/.virtualenvs/sentry/bin/uwsgi",
@@ -501,17 +501,17 @@ fn test_parse_common_log_entry() {
             None
         ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Fixed(
-                    2015-05-13T17:39:16+02:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Fixed(
+                        2015-05-13T17:39:16+02:00,
+                    ),
                 ),
-            ),
-            message: "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
-        },
-    )
-    "###
+                message: "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
+            },
+        )
+        "###
     );
 }
 
@@ -527,7 +527,7 @@ fn test_parse_common_alt_log_entry() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2015-10-05T11:40:10+02:00,
+                        2015-10-05T11:40:10-02:00,
                     ),
                 ),
                 message: "[INFO] PDApp.ExternalGateway - NativePlatformHandler destructed",
@@ -549,7 +549,7 @@ fn test_parse_common_alt2_log_entry() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2016-01-03T22:29:55+01:00,
+                        2016-01-03T22:29:55-02:00,
                     ),
                 ),
                 message: "[0x70000073b000] DEBUG - Responding HTTP/1.1 200",
@@ -568,7 +568,7 @@ fn test_parse_webserver_log() {
             LogEntry {
                 timestamp: Some(
                     Local(
-                        2018-02-25T06:11:12+01:00,
+                        2018-02-25T06:11:12-02:00,
                     ),
                 ),
                 message: "[:notice] [pid 1:tid 2] process manager initialized (pid 1)",
