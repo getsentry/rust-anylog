@@ -111,7 +111,7 @@ impl<'a> LogEntry<'a> {
 
     /// Like `message` but chops off a leading component.
     pub fn component_and_message(&'a self) -> (Option<&str>, &str) {
-        if let Some(caps) = COMPONENT_RE.captures(&self.message()) {
+        if let Some(caps) = COMPONENT_RE.captures(self.message()) {
             (
                 Some(caps.get(1).unwrap().as_str()),
                 caps.get(2).unwrap().as_str(),
