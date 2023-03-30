@@ -11,5 +11,5 @@ Tests require the timezone to be set to "CEST". The easiest way to do this is by
 exporting the `TZ` environment variable:
 
 ```bash
-TZ=CEST cargo test
+TZ=CET cargo test
 ```

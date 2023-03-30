@@ -46,4 +46,4 @@ jobs:
       - name: Run Cargo Tests
         run: cargo test --workspace --all-features
         env:
-          TZ: CEST
+          TZ: CET
