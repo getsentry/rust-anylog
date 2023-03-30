@@ -9,7 +9,7 @@ use crate::types::LogEntry;
 fn now() -> DateTime<Local> {
     #[cfg(test)]
     {
-        Local.ymd(2017, 1, 1).and_hms(0, 0, 0)
+        Local.with_ymd_and_hms(2017, 1, 1, 0, 0, 0).unwrap()
     }
     #[cfg(not(test))]
     {
@@ -23,11 +23,11 @@ fn today(offset: Option<FixedOffset>) -> (i32, u32, u32) {
             let today = {
                 #[cfg(test)]
                 {
-                    Local.ymd(2017, 1, 1)
+                    Local.with_ymd_and_hms(2017, 1, 1, 0, 0, 0).unwrap()
                 }
                 #[cfg(not(test))]
                 {
-                    Local::today()
+                    Local::now()
                 }
             };
             (today.year(), today.month(), today.day())
@@ -36,11 +36,11 @@ fn today(offset: Option<FixedOffset>) -> (i32, u32, u32) {
             let today = {
                 #[cfg(test)]
                 {
-                    Utc.ymd(2017, 1, 1)
+                    Utc.with_ymd_and_hms(2017, 1, 1, 0, 0, 0).unwrap()
                 }
                 #[cfg(not(test))]
                 {
-                    Utc::today()
+                    Utc::now()
                 }
             }
             .with_timezone(&offset);
@@ -185,14 +185,12 @@ fn log_entry_from_local_time(
 ) -> Option<LogEntry> {
     match offset {
         Some(offset) => offset
-            .ymd_opt(year, month, day)
+            .with_ymd_and_hms(year, month, day, hh, mm, ss)
             .latest()
-            .and_then(|date| date.and_hms_opt(hh, mm, ss))
             .map(|date| LogEntry::from_fixed_time(date, message)),
         None => Local
-            .ymd_opt(year, month, day)
+            .with_ymd_and_hms(year, month, day, hh, mm, ss)
             .latest()
-            .and_then(|date| date.and_hms_opt(hh, mm, ss))
             .map(|date| LogEntry::from_local_time(date, message)),
     }
 }
@@ -301,18 +299,17 @@ pub fn parse_common_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Opt
     let m: u32 = str::from_utf8(&caps[5]).unwrap().parse().unwrap();
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
-    let offset = FixedOffset::east(
+    let offset = FixedOffset::east_opt(
         ((if &caps[7] == b"+" { 1i32 } else { -1i32 })
             * str::from_utf8(&caps[8]).unwrap().parse::<i32>().unwrap()
             * 60
             + str::from_utf8(&caps[9]).unwrap().parse::<i32>().unwrap())
             * 60,
-    );
+    )?;
 
     Some(LogEntry::from_fixed_time(
         offset
-            .ymd_opt(year, month, day)
-            .and_hms_opt(h, m, s)
+            .with_ymd_and_hms(year, month, day, h, m, s)
             .single()?,
         caps.get(10).map(|x| x.as_bytes()).unwrap(),
     ))
@@ -382,9 +379,7 @@ pub fn parse_ue4_log_entry(bytes: &[u8], _offset: Option<FixedOffset>) -> Option
     let s: u32 = str::from_utf8(&caps[6]).unwrap().parse().unwrap();
 
     Some(LogEntry::from_utc_time(
-        Utc.ymd_opt(year, month, day)
-            .and_hms_opt(h, m, s)
-            .single()?,
+        Utc.with_ymd_and_hms(year, month, day, h, m, s).single()?,
         caps.get(7).map(|x| x.as_bytes()).unwrap(),
     ))
 }
@@ -505,17 +500,17 @@ fn test_parse_common_log_entry() {
             None
         ),
         @r###"
-    Some(
-        LogEntry {
-            timestamp: Some(
-                Fixed(
-                    2015-05-13T17:39:16+02:00,
+        Some(
+            LogEntry {
+                timestamp: Some(
+                    Fixed(
+                        2015-05-13T17:39:16+02:00,
+                    ),
                 ),
-            ),
-            message: "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
-        },
-    )
-    "###
+                message: "Repaired 'Library/Printers/Canon/IJScanner/Resources/Parameters/CNQ9601'",
+            },
+        )
+        "###
     );
 }
 
